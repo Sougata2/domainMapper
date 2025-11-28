@@ -6,6 +6,7 @@ import com.domain.mapper.references.MasterEntity;
 import java.util.Map;
 
 public interface Mapping {
-    Map<? extends MasterEntity, ? extends MasterDto> getEntityDtoMap();
-    Map<? extends MasterDto, ? extends MasterEntity> getDtoEntityMap();
+    Map<Class<? extends MasterEntity>, Class<? extends MasterDto>> getEntityDtoMap();
+
+    Map<Class<? extends MasterDto>, Class<? extends MasterEntity>> getDtoEntityMap();
 }
