@@ -1,6 +1,7 @@
 package com.domain.mapper.service.impl;
 
 import com.domain.mapper.mapping.Mapping;
+import com.domain.mapper.references.Edge;
 import com.domain.mapper.references.MasterDto;
 import com.domain.mapper.references.MasterEntity;
 import com.domain.mapper.references.ParentChild;
@@ -44,11 +45,11 @@ public class MapperServiceImpl implements MapperService {
             MasterDto res = null;
 
             Queue<ParentChild<MasterDto, MasterEntity>> queue = new LinkedList<>();
-            Set<Object> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+            Set<Edge> visited = new HashSet<>();
 
             entity = (entity instanceof HibernateProxy) ? (MasterEntity) Hibernate.unproxy(entity) : entity;
             queue.add(new ParentChild<>(null, entity, "super", 0));
-            visited.add((entity instanceof HibernateProxy) ? Hibernate.unproxy(entity) : entity);
+            visited.add(new Edge(null, entity, "super"));
 
             while (!queue.isEmpty()) {
                 ParentChild<MasterDto, MasterEntity> u = queue.poll();
@@ -92,8 +93,9 @@ public class MapperServiceImpl implements MapperService {
                             } else {
                                 for (Object o : collection) {
                                     o = (o instanceof HibernateProxy) ? Hibernate.unproxy(o) : o;
-                                    if (!visited.contains(o)) {
-                                        visited.add(o);
+                                    Edge edge = new Edge(actualChild, o, ef.getName());
+                                    if (!visited.contains(edge)) {
+                                        visited.add(edge);
                                         queue.add(new ParentChild<>(dto, (MasterEntity) o, df.getName(), level + 1));
                                     }
                                 }
@@ -103,8 +105,9 @@ public class MapperServiceImpl implements MapperService {
                     // if the field is an object
                     else if (isComplex(df)) {
                         if (value != null && level < depth) {
-                            if (!visited.contains(value)) {
-                                visited.add(value);
+                            Edge edge = new Edge(actualChild, value, ef.getName());
+                            if (!visited.contains(edge)) {
+                                visited.add(edge);
                                 queue.add(new ParentChild<>(dto, (MasterEntity) value, df.getName(), level + 1));
                             }
                         }
