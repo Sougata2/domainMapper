@@ -4,14 +4,14 @@ public class ParentChild<P, C> {
     private final P parent;
     private final C child;
     private final int level;
-    private final String childName;
+    private final String relationName;
 
-    public ParentChild(P parent, C child, String childName) {
-        this(parent, child, childName, 0);
+    public ParentChild(P parent, C child, String relationName) {
+        this(parent, child, relationName, 0);
     }
 
-    public ParentChild(P parent, C child, String childName, int level) {
-        this.childName = childName;
+    public ParentChild(P parent, C child, String relationName, int level) {
+        this.relationName = relationName;
         this.parent = parent;
         this.child = child;
         this.level = level;
@@ -29,7 +29,7 @@ public class ParentChild<P, C> {
         return level;
     }
 
-    public String childName() {
-        return childName;
+    public String relationName() {
+        return relationName;
     }
 }
