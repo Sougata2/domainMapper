@@ -7,6 +7,7 @@ import com.domain.mapper.references.MasterEntity;
 import com.domain.mapper.references.ParentChild;
 import com.domain.mapper.service.MapperService;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapperServiceImpl implements MapperService {
     private final Mapping map;
@@ -252,7 +254,72 @@ public class MapperServiceImpl implements MapperService {
 
     @Override
     public MasterEntity merge(MasterEntity og, MasterDto nu) {
-        return null;
+        try {
+            for (Field ogf : og.getClass().getDeclaredFields()) {
+                ogf.setAccessible(true);
+                Field nuf = nu.getClass().getDeclaredField(ogf.getName());
+                nuf.setAccessible(true);
+
+                if (Collection.class.isAssignableFrom(ogf.getType())) {
+                    Object ogValue = ogf.get(og);
+                    Object nuValue = nuf.get(nu);
+
+                    if (nuValue != null) {
+                        Collection<MasterEntity> ogCollection = (Collection<MasterEntity>) ogValue;
+                        Collection<MasterEntity> nuCollection = (Collection<MasterEntity>) nuValue;
+
+                        Map<Long, MasterEntity> ogMap = ogCollection.stream().collect(Collectors.toMap(MasterEntity::getId, e -> e));
+                        Map<Long, MasterEntity> nuMap = nuCollection.stream().collect(Collectors.toMap(MasterEntity::getId, e -> e));
+
+                        Set<MasterEntity> insertSet = new HashSet<>();
+                        for (MasterEntity o : nuCollection) {
+                            if (o != null) {
+                                if (!ogMap.containsKey(o.getId())) {
+                                    try {
+                                        MasterEntity managedEntity = em.getReference(o.getClass(), o.getId());
+                                        if (managedEntity != null) {
+                                            insertSet.add(managedEntity);
+                                        }
+                                    } catch (EntityNotFoundException e) {
+                                        throw new EntityNotFoundException(e.getMessage());
+                                    }
+                                }
+                            }
+                        }
+                        ogCollection.addAll(insertSet);
+
+                        Set<MasterEntity> deleteSet = new HashSet<>();
+                        for (MasterEntity o : ogCollection) {
+                            if (o != null) {
+                                if (!nuMap.containsKey(o.getId())) {
+                                    deleteSet.add(o);
+                                }
+                            }
+                        }
+                        deleteSet.forEach(ogCollection::remove);
+                    }
+                } else if (isComplex(ogf)) {
+                    MasterEntity relation = (MasterEntity) nuf.get(nu);
+                    if (relation != null) {
+                        if (relation.getId() == null) {
+                            ogf.set(og, null);
+                        } else if (relation.getId() != null) {
+                            MasterEntity managedEntity = (MasterEntity) em.getReference(ogf.getType(), relation.getId());
+                            if (managedEntity == null) throw new EntityNotFoundException();
+                            ogf.set(og, managedEntity);
+                        }
+                    }
+                } else {
+                    Object nufValue = nuf.get(nu);
+                    if (nufValue != null) {
+                        ogf.set(og, nufValue);
+                    }
+                }
+            }
+            return og;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
