@@ -10,5 +10,5 @@ public interface MapperService {
 
     MasterDto toDto(MasterEntity entity);
 
-    MasterEntity merge(MasterEntity og, MasterDto nu);
+    MasterEntity merge(MasterEntity og, MasterEntity nu);
 }

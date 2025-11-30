@@ -253,7 +253,7 @@ public class MapperServiceImpl implements MapperService {
     }
 
     @Override
-    public MasterEntity merge(MasterEntity og, MasterDto nu) {
+    public MasterEntity merge(MasterEntity og, MasterEntity nu) {
         try {
             for (Field ogf : og.getClass().getDeclaredFields()) {
                 ogf.setAccessible(true);
