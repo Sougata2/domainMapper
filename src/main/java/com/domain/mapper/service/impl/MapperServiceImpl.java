@@ -255,6 +255,8 @@ public class MapperServiceImpl implements MapperService {
     @Override
     public MasterEntity merge(MasterEntity og, MasterEntity nu) {
         try {
+            og = (og instanceof HibernateProxy) ? (MasterEntity) Hibernate.unproxy(og) : og;
+            nu = (nu instanceof HibernateProxy) ? (MasterEntity) Hibernate.unproxy(nu) : nu;
             for (Field ogf : og.getClass().getDeclaredFields()) {
                 ogf.setAccessible(true);
                 Field nuf = nu.getClass().getDeclaredField(ogf.getName());
