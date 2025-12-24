@@ -40,7 +40,7 @@ public class MapperServiceImpl implements MapperService {
             if (dto == null) return null;
             MasterEntity res = null;
             Queue<ParentChild<MasterEntity, MasterDto>> queue = new LinkedList<>();
-            Set<Edge> visited = new HashSet<>();
+            Set<Edge> visited = new LinkedHashSet<>();
 
             queue.add(new ParentChild<>(null, dto, "super"));
             visited.add(new Edge(null, dto, "super"));
@@ -69,7 +69,7 @@ public class MapperServiceImpl implements MapperService {
                         if (value != null) {
                             Collection<?> collection = (Collection<?>) value;
                             if (collection.isEmpty()) {
-                                ef.set(entity, new HashSet<>());
+                                ef.set(entity, new LinkedHashSet<>());
                             } else {
                                 for (Object o : collection) {
                                     Edge edge = new Edge(child, o, df.getName());
@@ -107,7 +107,7 @@ public class MapperServiceImpl implements MapperService {
                                 if (actualType == entity.getClass() && pf.getName().equals(relationName)) {
                                     Collection<MasterEntity> collection = (Collection<MasterEntity>) pf.get(parent);
                                     if (collection == null) {
-                                        collection = new HashSet<>();
+                                        collection = new LinkedHashSet<>();
                                         collection.add(entity);
                                         pf.set(parent, collection);
                                     } else {
@@ -137,7 +137,7 @@ public class MapperServiceImpl implements MapperService {
             MasterDto res = null;
 
             Queue<ParentChild<MasterDto, MasterEntity>> queue = new LinkedList<>();
-            Set<Edge> visited = new HashSet<>();
+            Set<Edge> visited = new LinkedHashSet<>();
 
             entity = (entity instanceof HibernateProxy) ? (MasterEntity) Hibernate.unproxy(entity) : entity;
             queue.add(new ParentChild<>(null, entity, "super", 0));
@@ -181,7 +181,7 @@ public class MapperServiceImpl implements MapperService {
                         Collection<?> collection = (Collection<?>) value;
                         if (value != null && level < depth) {
                             if (collection.isEmpty()) {
-                                df.set(dto, new HashSet<>());
+                                df.set(dto, new LinkedHashSet<>());
                             } else {
                                 for (Object o : collection) {
                                     o = (o instanceof HibernateProxy) ? Hibernate.unproxy(o) : o;
@@ -225,7 +225,7 @@ public class MapperServiceImpl implements MapperService {
                                 if (actualType == dto.getClass() && pf.getName().equals(relationName)) {
                                     Collection<MasterDto> collection = (Collection<MasterDto>) pf.get(parent);
                                     if (collection == null) {
-                                        collection = new HashSet<>();
+                                        collection = new LinkedHashSet<>();
                                         collection.add(dto);
                                         pf.set(parent, collection);
                                     } else {
@@ -273,7 +273,7 @@ public class MapperServiceImpl implements MapperService {
                         Map<Long, MasterEntity> ogMap = ogCollection.stream().collect(Collectors.toMap(MasterEntity::getId, e -> e));
                         Map<Long, MasterEntity> nuMap = nuCollection.stream().collect(Collectors.toMap(MasterEntity::getId, e -> e));
 
-                        Set<MasterEntity> insertSet = new HashSet<>();
+                        Set<MasterEntity> insertSet = new LinkedHashSet<>();
                         for (MasterEntity o : nuCollection) {
                             if (o != null) {
                                 if (!ogMap.containsKey(o.getId())) {
@@ -290,7 +290,7 @@ public class MapperServiceImpl implements MapperService {
                         }
                         ogCollection.addAll(insertSet);
 
-                        Set<MasterEntity> deleteSet = new HashSet<>();
+                        Set<MasterEntity> deleteSet = new LinkedHashSet<>();
                         for (MasterEntity o : ogCollection) {
                             if (o != null) {
                                 if (!nuMap.containsKey(o.getId())) {
