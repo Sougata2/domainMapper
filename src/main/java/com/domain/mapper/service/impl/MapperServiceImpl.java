@@ -66,17 +66,16 @@ public class MapperServiceImpl implements MapperService {
                     Object value = df.get(child);
 
                     if (Collection.class.isAssignableFrom(ef.getType())) {
+                        Collection<MasterEntity> entityCollection = new LinkedHashSet<>();
+                        ef.set(entity, entityCollection);
+
                         if (value != null) {
-                            Collection<?> collection = (Collection<?>) value;
-                            if (collection.isEmpty()) {
-                                ef.set(entity, new LinkedHashSet<>());
-                            } else {
-                                for (Object o : collection) {
-                                    Edge edge = new Edge(child, o, df.getName());
-                                    if (!visited.contains(edge)) {
-                                        visited.add(edge);
-                                        queue.add(new ParentChild<>(entity, (MasterDto) o, ef.getName()));
-                                    }
+                            Collection<?> dtoCollection = (Collection<?>) value;
+
+                            for (Object o : dtoCollection) {
+                                Edge edge = new Edge(child, o, df.getName());
+                                if (visited.add(edge)) {
+                                    queue.add(new ParentChild<>(entity, (MasterDto) o, ef.getName()));
                                 }
                             }
                         }
@@ -106,13 +105,7 @@ public class MapperServiceImpl implements MapperService {
                                 Type actualType = ((ParameterizedType) genericType).getActualTypeArguments()[0];
                                 if (actualType == entity.getClass() && pf.getName().equals(relationName)) {
                                     Collection<MasterEntity> collection = (Collection<MasterEntity>) pf.get(parent);
-                                    if (collection == null) {
-                                        collection = new LinkedHashSet<>();
-                                        collection.add(entity);
-                                        pf.set(parent, collection);
-                                    } else {
-                                        collection.add(entity);
-                                    }
+                                    collection.add(entity);
                                 }
                             }
                         } else if (isComplex(pf)) {
@@ -342,6 +335,6 @@ public class MapperServiceImpl implements MapperService {
                 !Double.class.isAssignableFrom(f.getType()) && !Boolean.class.isAssignableFrom(f.getType()) &&
                 !Float.class.isAssignableFrom(f.getType()) && !String.class.isAssignableFrom(f.getType()) &&
                 !LocalDateTime.class.isAssignableFrom(f.getType()) && !Timestamp.class.isAssignableFrom(f.getType()) &&
-                !Date.class.isAssignableFrom(f.getType()) && !f.getType().isEnum();
+                !Date.class.isAssignableFrom(f.getType()) && !f.getType().isEnum() && !UUID.class.isAssignableFrom(f.getType());
     }
 }
