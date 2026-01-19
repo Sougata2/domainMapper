@@ -15,6 +15,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -335,6 +336,7 @@ public class MapperServiceImpl implements MapperService {
                 !Double.class.isAssignableFrom(f.getType()) && !Boolean.class.isAssignableFrom(f.getType()) &&
                 !Float.class.isAssignableFrom(f.getType()) && !String.class.isAssignableFrom(f.getType()) &&
                 !LocalDateTime.class.isAssignableFrom(f.getType()) && !Timestamp.class.isAssignableFrom(f.getType()) &&
-                !Date.class.isAssignableFrom(f.getType()) && !f.getType().isEnum() && !UUID.class.isAssignableFrom(f.getType());
+                !Date.class.isAssignableFrom(f.getType()) && !f.getType().isEnum() && !UUID.class.isAssignableFrom(f.getType()) &&
+                !Instant.class.isAssignableFrom(f.getType()) && !f.getType().isPrimitive();
     }
 }
